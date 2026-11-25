@@ -8,11 +8,10 @@ A full-stack LLM chatbot built with **React, FastAPI, LiteLLM, and SQLite**. Sup
 
 | Service | URL |
 |---|---|
-| Frontend | `https://<your-frontend-url>` |
-| Backend | `https://<your-backend-url>` |
-| API docs | `https://<your-backend-url>/docs` |
-| Repository | `https://github.com/<your-username>/<your-repo>` |
-| Demo video | `<your-demo-video-url>` |
+| Frontend | `https://lyftr-ai-pied-two.vercel.app/` |
+| Backend | `https://lyftr-ai-33pr.onrender.com` |
+| API docs | `https://lyftr-ai-33pr.onrender.com/docs` |
+| Repository | `https://github.com/palakaeron/Lyftr-AI` |
 
 ---
 
