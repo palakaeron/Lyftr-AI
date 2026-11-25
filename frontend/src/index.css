@@ -1,0 +1,74 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* ── Sidebar palette ─────────────────────────────────── */
+  --sidebar-bg:        #171717;
+  --sidebar-hover:     #2a2a2a;
+  --sidebar-active:    #2a2a2a;
+  --sidebar-border:    #2f2f2f;
+  --sidebar-text:      #ececec;
+  --sidebar-muted:     #8e8ea0;
+  --sidebar-width:     260px;
+
+  /* ── Main content palette ────────────────────────────── */
+  --bg:                #212121;
+  --surface:           #2f2f2f;
+  --surface2:          #2f2f2f;
+  --border:            #3f3f3f;
+  --text:              #ececec;
+  --text-muted:        #8e8ea0;
+
+  /* ── Accent (send button, user bubble) ───────────────── */
+  --accent:            #10a37f;
+  --accent-hover:      #0d8f6f;
+  --user-bubble:       #2f6f5e;
+  --assistant-bubble:  transparent;
+
+  /* ── Status colours ──────────────────────────────────── */
+  --error:             #ef4444;
+  --success:           #22c55e;
+
+  /* ── Radii ───────────────────────────────────────────── */
+  --radius:            12px;
+  --radius-sm:         6px;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, -apple-system, system-ui, 'Segoe UI', Helvetica,
+    Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+textarea {
+  outline: none;
+  resize: none;
+  font-family: inherit;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
