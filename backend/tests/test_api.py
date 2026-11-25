@@ -296,3 +296,67 @@ async def test_simulated_failure_not_permanent(client):
         )
     assert r2.status_code == 200
     assert r2.json()["reply"] == "Now it works"
+
+
+# ─── 17. GET /sessions lists all sessions ─────────────────────────────────────
+
+async def test_list_sessions_empty(client):
+    r = await client.get("/sessions")
+    assert r.status_code == 200
+    body = r.json()
+    assert "sessions" in body
+    assert isinstance(body["sessions"], list)
+
+
+async def test_list_sessions_contains_created_sessions(client):
+    sid_a = session()
+    sid_b = session()
+
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=live(reply="Hello A"))):
+        await client.post("/chat", json={"session_id": sid_a, "message": "Hello from A"})
+
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=live(reply="Hello B"))):
+        await client.post("/chat", json={"session_id": sid_b, "message": "Hello from B"})
+
+    r = await client.get("/sessions")
+    assert r.status_code == 200
+    ids = [s["session_id"] for s in r.json()["sessions"]]
+    assert sid_a in ids
+    assert sid_b in ids
+
+
+async def test_list_sessions_preview_is_first_user_message(client):
+    sid = session()
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=live(reply="Pong"))):
+        await client.post("/chat", json={"session_id": sid, "message": "Ping preview message"})
+
+    r = await client.get("/sessions")
+    assert r.status_code == 200
+    match = next((s for s in r.json()["sessions"] if s["session_id"] == sid), None)
+    assert match is not None
+    assert "Ping preview message" in match["preview"]
+
+
+async def test_list_sessions_ordered_most_recent_first(client):
+    sid_old = session()
+    sid_new = session()
+
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=live())):
+        await client.post("/chat", json={"session_id": sid_old, "message": "Older"})
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=live())):
+        await client.post("/chat", json={"session_id": sid_new, "message": "Newer"})
+
+    r = await client.get("/sessions")
+    ids = [s["session_id"] for s in r.json()["sessions"]]
+    # sid_new was written last, so it should appear before sid_old
+    assert ids.index(sid_new) < ids.index(sid_old)
+
+
+async def test_failed_requests_not_in_session_list(client):
+    sid = session()
+    with patch("app.main.chat_completion", new=AsyncMock(return_value=None)):
+        await client.post("/chat", json={"session_id": sid, "message": "Should not appear"})
+
+    r = await client.get("/sessions")
+    ids = [s["session_id"] for s in r.json()["sessions"]]
+    assert sid not in ids

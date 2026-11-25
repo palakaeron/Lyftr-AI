@@ -99,8 +99,26 @@ export default function App() {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [pastSessions, setPastSessions] = useState([]);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+
+  // Fetch the full session list from the backend
+  const loadSessions = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/sessions`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setPastSessions(data.sessions || []);
+    } catch {
+      // Sidebar list is non-critical; silently ignore network errors
+    }
+  }, []);
+
+  // Load session list once on mount
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   // Load existing session history on mount (and whenever sessionId changes)
   useEffect(() => {
@@ -122,7 +140,6 @@ export default function App() {
         }
         const data = await res.json();
         if (cancelled) return;
-        // Map backend messages to the shape MessageBubble expects
         const loaded = (data.messages || []).map((m) => ({
           role: m.role,
           content: m.content,
@@ -138,6 +155,14 @@ export default function App() {
 
     loadHistory();
     return () => { cancelled = true; };
+  }, [sessionId]);
+
+  // Switch to a past session
+  const switchSession = useCallback((id) => {
+    if (id === sessionId) return;
+    setSessionId(id);
+    setInput('');
+    setSystemPrompt('');
   }, [sessionId]);
 
   // Start a new session: generate fresh ID, clear state
@@ -219,6 +244,8 @@ export default function App() {
           metadata: data.metadata,
         },
       ]);
+      // Refresh sidebar so new sessions appear immediately
+      loadSessions();
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -231,7 +258,7 @@ export default function App() {
       setLoading(false);
       textareaRef.current?.focus();
     }
-  }, [input, loading, sessionId, systemPrompt]);
+  }, [input, loading, sessionId, systemPrompt, loadSessions]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -260,16 +287,26 @@ export default function App() {
           </button>
         </div>
 
-        <div className="sidebar-section-label">Current session</div>
+        <div className="sidebar-section-label">Recent chats</div>
         <div className="sidebar-sessions">
-          <div className="session-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            <span className="session-item-label" title={sessionId}>
-              {sessionId.slice(0, 20)}…
-            </span>
-          </div>
+          {pastSessions.length === 0 && (
+            <p className="sidebar-empty">No previous chats yet.</p>
+          )}
+          {pastSessions.map((s) => (
+            <button
+              key={s.session_id}
+              className={`session-item${s.session_id === sessionId ? ' active' : ''}`}
+              onClick={() => switchSession(s.session_id)}
+              title={s.session_id}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span className="session-item-label">
+                {s.preview || s.session_id.slice(0, 20) + '…'}
+              </span>
+            </button>
+          ))}
         </div>
 
         <div className="sidebar-footer">

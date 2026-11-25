@@ -82,6 +82,43 @@ def save_message(
         conn.close()
 
 
+def list_sessions() -> List[dict]:
+    """
+    Returns all sessions ordered by most recent activity, with a short preview
+    taken from the first user message in each session.
+
+    Each row: {"session_id": str, "preview": str, "created_at": str}
+    """
+    conn = _get_connection()
+    try:
+        rows = conn.execute(
+            """
+            SELECT
+                session_id,
+                MIN(CASE WHEN role = 'user' THEN content END) AS preview,
+                MAX(created_at) AS last_active
+            FROM messages
+            GROUP BY session_id
+            ORDER BY last_active DESC
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+
+    result = []
+    for row in rows:
+        preview = row["preview"] or ""
+        # Truncate long previews
+        if len(preview) > 60:
+            preview = preview[:57] + "…"
+        result.append({
+            "session_id": row["session_id"],
+            "preview": preview,
+            "last_active": row["last_active"],
+        })
+    return result
+
+
 def get_messages(session_id: str) -> Optional[List[dict]]:
     """
     Returns list of messages for the session, or None if the session does not exist.

@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_validator
 
-from .database import init_db, get_db, save_message, get_messages
+from .database import init_db, get_db, save_message, get_messages, list_sessions
 from .llm import chat_completion, CacheHit
 
 logging.basicConfig(level=logging.INFO)
@@ -184,6 +184,17 @@ async def chat(
         "reply": reply,
         "metadata": metadata,
     }
+
+
+@app.get("/sessions")
+async def get_all_sessions():
+    """
+    Returns all sessions ordered by most recent activity.
+    Each item includes session_id, a short preview from the first user message,
+    and the timestamp of the last message in that session.
+    """
+    sessions = list_sessions()
+    return {"sessions": sessions}
 
 
 @app.get("/sessions/{session_id}/messages")

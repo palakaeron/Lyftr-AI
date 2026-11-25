@@ -70,16 +70,22 @@
 .session-item {
   display: flex;
   align-items: center;
+  width: 100%;
   padding: 9px 12px;
   border-radius: 8px;
   font-size: 13px;
   color: var(--sidebar-text);
-  cursor: default;
+  cursor: pointer;
+  background: transparent;
   transition: background 0.12s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   gap: 8px;
+  text-align: left;
+}
+.session-item:hover {
+  background: var(--sidebar-hover);
 }
 .session-item.active {
   background: var(--sidebar-active);
@@ -94,6 +100,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+}
+.sidebar-empty {
+  font-size: 12px;
+  color: var(--sidebar-muted);
+  padding: 8px 12px;
+  font-style: italic;
 }
 
 /* Sidebar footer (branding) */

@@ -207,4 +207,4 @@ pytest tests/ -v
 - **Failure simulation at any granularity** — `X-Simulate-Failure` accepts specific key IDs or the wildcard `*`, making it easy to demonstrate partial and total outage scenarios without changing any configuration.
 - **Non-root Docker container** — the backend runs as `appuser`, not root.
 - **New Chat control** — sidebar button starts a fresh session without a page reload.
-- **Session history on mount** — the frontend restores the conversation from `GET /sessions/{id}/messages` when the same session is revisited within the same browser tab.
+- **Session history browser** — the sidebar lists all past conversations retrieved from `GET /sessions`, ordered by most recent activity. Each entry shows the first user message as a preview. Clicking any entry restores the full conversation via `GET /sessions/{id}/messages`. New sessions appear in the list the moment their first reply arrives.
